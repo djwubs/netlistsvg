@@ -40,7 +40,6 @@ function drawModule(g, module) {
                             cx: j.x,
                             cy: j.y,
                             r: 2,
-                            style: 'fill:#000',
                             class: netName,
                         }];
                 });
@@ -56,6 +55,26 @@ function drawModule(g, module) {
             return bends.concat(line);
         });
     });
+    // start of hover module
+    // sort lines by net
+    lines.sort(function (a, b) {
+        return ('' + a[1].class).localeCompare(b[1].class);
+    });
+    // put lines of the same net into a group, with the same netName as class
+    var line;
+    var newLines = new Array();
+    var lastNetName;
+    var pos = -1;
+    for (line of lines) {
+        if (line[1].class !== lastNetName) {
+            newLines.push(['g', {class: line[1].class}]);
+            pos += 1;
+            lastNetName = line[1].class;
+        }
+        newLines[pos].push(line);
+    };
+    lines = newLines;
+    // end of hover module
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
