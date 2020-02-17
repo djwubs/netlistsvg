@@ -58,22 +58,22 @@ function drawModule(g, module) {
     // start of hover module
     // sort lines by net
     lines.sort(function (a, b) {
-        return a[1].class.slice(4) - b[1].class.slice(4)
+        return ('' + a[1].class).localeCompare(b[1].class);
     });
     // put lines of the same net into a group, with the same netName as class
     var line;
-    var lines_2 = new Array();
+    var newLines = new Array();
     var lastNetName;
     var pos = -1;
     for (line of lines) {
         if (line[1].class !== lastNetName) {
-            lines_2.push(['g', {class: line[1].class}]);
+            newLines.push(['g', {class: line[1].class}]);
             pos += 1;
             lastNetName = line[1].class;
         }
-        lines_2[pos].push(line);
+        newLines[pos].push(line);
     };
-    lines = lines_2;
+    lines = newLines;
     // end of hover module
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
