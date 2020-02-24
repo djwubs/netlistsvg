@@ -67,7 +67,11 @@ function drawModule(g, module) {
     var pos = -1;
     for (line of lines) {
         if (line[1].class !== lastNetName) {
-            newLines.push(['g', {class: line[1].class}]);
+            var bus = '';
+            if (line[1].class.includes(',', 3)) {
+                bus = ' bus';
+            }
+            newLines.push(['g', {class: line[1].class.concat(bus)}]);
             pos += 1;
             lastNetName = line[1].class;
         }

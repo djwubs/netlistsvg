@@ -45,6 +45,14 @@ text {
 circle[class^='net_'] {
   fill:black;
 }
+line[class^='net_'] {
+  stroke-linecap:round;
+}
+g[class^='net_'].bus * {
+  fill:black;
+  stroke:black;
+  stroke-width:2;
+}
 g[class^='net_']:hover * {
   fill:red;
   stroke:red;
