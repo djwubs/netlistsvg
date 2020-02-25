@@ -33,63 +33,50 @@ GET_TOP ?= export TOP=$$(echo $(basename $<) | tr a-z A-Z);
 
 # Top level diagram
 %.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP; write_json -compat-int $@" $<
 
 # Split wires, can make it easier for the diagram if nets are split up
 %.split.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP; splitnets; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP; splitnets; write_json -compat-int $@" $<
 
 # Flatten the diagram into logic + black boxes
 %.flat.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; write_json -compat-int $@" $<
 
 # Convert logic into AND and NOT logic
 %.aig.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap; write_json -compat-int $@" $<
 
 # Convert logic into NAND, AND and NOT logic
 %.naig.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap -nand; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; aigmap -nand; write_json -compat-int $@" $<
 
 # Convert logic into "simple logic" - NOT, AND, XOR, etc
 %.simplemap.json: %.v Makefile
-	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; simplemap; write_json $@" $<
+	$(GET_TOP) $(YOSYS) $(YOSYS_FLAGS) -p "prep -top $$TOP -flatten; cd $$TOP; simplemap; write_json -compat-int $@" $<
 
 # Use netlistsvg to generate SVG files
 %.svg: %.json $(NETLISTSVG_SKIN)
 	$(NODE) $(NETLISTSVG) $< -o $@ --skin $(NETLISTSVG_SKIN)
 
-# Use inkscape to render the SVG files into PNG files.
-%.png: %.svg
-	$(INKSCAPE) --export-png $@ --export-dpi $(NETLISTSVG_DPI) $< 2>&1 | grep -v "WARNING: unknown type: s:alias"
-
-# Open the rendered PNG in a file viewer
-%.view: %.png
-	eog $< &
-
 # Generate all PNGs for simple files
-%.simple.all: %.png %.aig.png
+%.simple.all: %.svg %.aig.svg
 	@true
 
 # Generate all PNGS for complex files
-%.complex.all: %.png %.split.png %.flat.png %.aig.png %.simplemap.png
+%.complex.all: %.svg %.split.svg %.flat.svg %.aig.svg %.simplemap.svg
 	@true
 
 # Build everything!
 build.all: $(ALL_TARGETS)
 	@true
 
-# View everything!
-view.all: build.all
-	eog *.png &
-
 clean:
 	rm -f *.json *.svg *.png
 
 all:
-	make clean
-	make view.all
+	make build.all
 
 .DEFAULT_GOAL := all
-.PRECIOUS: %.png
+.PRECIOUS: %.svg
 .PHONY: view clean all
