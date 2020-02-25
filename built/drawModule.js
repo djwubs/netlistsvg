@@ -30,6 +30,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: b.y,
                         class: netName,
+                        'stroke-linecap': 'round',
                     }];
                 startPoint = b;
                 return l;
@@ -41,6 +42,7 @@ function drawModule(g, module) {
                             cy: j.y,
                             r: 2,
                             class: netName,
+                            fill: 'black',
                         }];
                 });
                 bends = bends.concat(circles);
@@ -51,6 +53,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: s.endPoint.y,
                         class: netName,
+                        'stroke-linecap':'round',
                     }]];
             return bends.concat(line);
         });
@@ -74,6 +77,9 @@ function drawModule(g, module) {
             newLines.push(['g', {class: line[1].class.concat(bus)}]);
             pos += 1;
             lastNetName = line[1].class;
+        }
+        if (line[1].class.includes(',', 3)) {
+            line[1]['stroke-width'] = 2;
         }
         newLines[pos].push(line);
     };
