@@ -6,7 +6,7 @@
     "jsRules": {},
     "rules": {
         "object-literal-sort-keys":[false],
-	    "object-literal-key-quotes":[false],
+	    "object-literal-key-quotes": [true, "as-needed"],
         "interface-name":[false],
         "ordered-imports":[false],
         "no-namespace":false,
