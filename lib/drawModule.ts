@@ -17,7 +17,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
         return n.render(kchild);
     });
     removeDummyEdges(g);
-    const lines: onml.Element[] = _.flatMap(g.edges, (e: ElkModel.Edge) => {
+    let lines: onml.Element[] = _.flatMap(g.edges, (e: ElkModel.Edge) => {
         const netId = ElkModel.wireNameLookup[e.id];
         const netName = 'net_' + netId.slice(1, netId.length - 1);
         return _.flatMap(e.sections, (s: ElkModel.Section) => {
@@ -30,6 +30,7 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                     y1: startPoint.y,
                     y2: b.y,
                     class: netName,
+                    'stroke-linecap': 'round',
                 }];
                 startPoint = b;
                 return l;
@@ -40,8 +41,8 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                         cx: j.x,
                         cy: j.y,
                         r: 2,
-                        style: 'fill:#000',
                         class: netName,
+                        fill: 'black',
                     }]);
                 bends = bends.concat(circles);
             }
@@ -51,10 +52,38 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
                 y1: startPoint.y,
                 y2: s.endPoint.y,
                 class: netName,
+                'stroke-linecap': 'round',
             }]];
             return bends.concat(line);
         });
     });
+    // start of hover+bus module:
+    // - sort lines by net
+    lines.sort((a, b) => {
+        return ('' + a[1].class).localeCompare(b[1].class);
+    });
+    // - put lines of the same net into a group, with the same netName as class
+    const newLines = new Array();
+    let lastNetName: string;
+    let pos = -1;
+    for (const line of lines) {
+        if (line[1].class !== lastNetName) {
+            let bus = '';
+            if (line[1].class.includes(',', 3)) {
+                bus = ' bus';
+            }
+            newLines.push(['g', {class: line[1].class.concat(bus)}]);
+            pos += 1;
+            lastNetName = line[1].class;
+        }
+        if (line[1].class.includes(',', 3)) {
+            line[1]['stroke-width'] = '2';
+        }
+        newLines[pos].push(line);
+    }
+    lines = newLines;
+    // end of hover+bus module
+
     const svgAttrs: onml.Attributes = Skin.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
