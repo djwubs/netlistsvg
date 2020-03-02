@@ -1,4 +1,11 @@
 "use strict";
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var elkGraph_1 = require("./elkGraph");
 var Skin_1 = require("./Skin");
@@ -53,38 +60,38 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: s.endPoint.y,
                         class: netName,
-                        'stroke-linecap':'round',
+                        'stroke-linecap': 'round',
                     }]];
             return bends.concat(line);
         });
     });
-    // start of hover module
-    // sort lines by net
+    // start of hover+bus module:
+    // - sort lines by net
     lines.sort(function (a, b) {
         return ('' + a[1].class).localeCompare(b[1].class);
     });
-    // put lines of the same net into a group, with the same netName as class
-    var line;
+    // - put lines of the same net into a group, with the same netName as class
     var newLines = new Array();
     var lastNetName;
     var pos = -1;
-    for (line of lines) {
+    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+        var line = lines_1[_i];
         if (line[1].class !== lastNetName) {
             var bus = '';
             if (line[1].class.includes(',', 3)) {
                 bus = ' bus';
             }
-            newLines.push(['g', {class: line[1].class.concat(bus)}]);
+            newLines.push(['g', { class: line[1].class.concat(bus) }]);
             pos += 1;
             lastNetName = line[1].class;
         }
         if (line[1].class.includes(',', 3)) {
-            line[1]['stroke-width'] = 2;
+            line[1]['stroke-width'] = '2';
         }
         newLines[pos].push(line);
-    };
+    }
     lines = newLines;
-    // end of hover module
+    // end of hover+bus module
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
@@ -96,8 +103,8 @@ function drawModule(g, module) {
             }
         },
     });
-    var elements = [styles].concat(nodes, lines);
-    var ret = ['svg', svgAttrs].concat(elements);
+    var elements = __spreadArrays([styles], nodes, lines);
+    var ret = __spreadArrays(['svg', svgAttrs], elements);
     return onml.s(ret);
 }
 exports.default = drawModule;
@@ -182,13 +189,13 @@ function removeDummyEdges(g) {
             var section = edge.sections[0];
             if (dummyIsSource) {
                 // get first bend or endPoint
-                if (section.bendPoints && section.bendPoints.length > 0) {
+                if (section.bendPoints) {
                     return [section.bendPoints[0]];
                 }
                 return section.endPoint;
             }
             else {
-                if (section.bendPoints && section.bendPoints.length > 0) {
+                if (section.bendPoints) {
                     return [_.last(section.bendPoints)];
                 }
                 return section.startPoint;
