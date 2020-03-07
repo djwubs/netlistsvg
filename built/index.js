@@ -35,10 +35,28 @@ function getHighlightId(highlight, yosysNetlist) {
             moduleName_1 = Object.keys(yosysNetlist.modules)[0];
         }
         var top = yosysNetlist.modules[moduleName_1];
-        for (var _i = 0, _a = Object.keys(top.netnames); _i < _a.length; _i++) {
-            var netname = _a[_i];
-            if (netname === highlight) {
-                return FlatModule_1.arrayToBitstring(top.netnames[netname].bits);
+        if (highlight.includes(' ')) {
+            var highlightSplit = highlight.split(' ');
+            var hModule = highlightSplit[0];
+            var hConnection = highlightSplit[1];
+            for (var _i = 0, _a = Object.keys(top.cells); _i < _a.length; _i++) {
+                var subModule = _a[_i];
+                if (subModule === hModule) {
+                    for (var _b = 0, _c = Object.keys(top.cells[subModule].connections); _b < _c.length; _b++) {
+                        var connection = _c[_b];
+                        if (connection === hConnection) {
+                            return FlatModule_1.arrayToBitstring(top.cells[subModule].connections[connection]);
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            for (var _d = 0, _e = Object.keys(top.netnames); _d < _e.length; _d++) {
+                var netname = _e[_d];
+                if (netname === highlight) {
+                    return FlatModule_1.arrayToBitstring(top.netnames[netname].bits);
+                }
             }
         }
     }

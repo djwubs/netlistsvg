@@ -79,6 +79,11 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule, highli
         if (line[1].class.includes(',', 3)) {
             line[1]['stroke-width'] = '2';
         }
+        if (line[1].class.slice(4) === highlightId) {
+            line[1]['stroke-width'] = '2';
+            line[1].stroke = 'red';
+            line[1].fill = 'red';
+        }
         newLines[pos].push(line);
     }
     lines = newLines;

@@ -41,9 +41,26 @@ function getHighlightId(highlight: string, yosysNetlist: Yosys.Netlist): string 
             moduleName = Object.keys(yosysNetlist.modules)[0];
         }
         const top = yosysNetlist.modules[moduleName];
-        for (const netname of Object.keys(top.netnames)) {
-            if (netname === highlight) {
-                return arrayToBitstring(top.netnames[netname].bits);
+
+        if (highlight.includes(' ')) {
+            const highlightSplit: string[] = highlight.split(' ');
+            const hModule: string = highlightSplit[0];
+            const hConnection: string = highlightSplit[1];
+
+            for (const subModule of Object.keys(top.cells)) {
+                if (subModule === hModule) {
+                    for (const connection of Object.keys(top.cells[subModule].connections)) {
+                        if (connection === hConnection) {
+                            return arrayToBitstring(top.cells[subModule].connections[connection]);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (const netname of Object.keys(top.netnames)) {
+                if (netname === highlight) {
+                    return arrayToBitstring(top.netnames[netname].bits);
+                }
             }
         }
     } else {
