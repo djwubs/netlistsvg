@@ -101,7 +101,7 @@ namespace Yosys {
     export interface Module {
         ports: ExtPortMap;
         cells: CellMap;
-        netNames: NetNameMap;
+        netnames: NetNameMap;
         attributes?: ModuleAttributes;
     }
 }

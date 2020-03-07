@@ -18,7 +18,7 @@ var WireDirection;
     WireDirection[WireDirection["Left"] = 2] = "Left";
     WireDirection[WireDirection["Right"] = 3] = "Right";
 })(WireDirection || (WireDirection = {}));
-function drawModule(g, module) {
+function drawModule(g, module, highlightId) {
     var nodes = module.nodes.map(function (n) {
         var kchild = _.find(g.children, function (c) { return c.id === n.Key; });
         return n.render(kchild);
@@ -87,6 +87,11 @@ function drawModule(g, module) {
         }
         if (line[1].class.includes(',', 3)) {
             line[1]['stroke-width'] = '2';
+        }
+        if (line[1].class.slice(4) === highlightId) {
+            line[1]['stroke-width'] = '2';
+            line[1].stroke = 'red';
+            line[1].fill = 'red';
         }
         newLines[pos].push(line);
     }
