@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "max-line-length": [false],
         "object-literal-sort-keys":[false],
 	    "object-literal-key-quotes": [true, "as-needed"],
         "interface-name":[false],

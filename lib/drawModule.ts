@@ -11,7 +11,7 @@ enum WireDirection {
     Up, Down, Left, Right,
 }
 
-export default function drawModule(g: ElkModel.Graph, module: FlatModule) {
+export default function drawModule(g: ElkModel.Graph, module: FlatModule, highlightId: string) {
     const nodes: onml.Element[] = module.nodes.map((n: Cell) => {
         const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.Key);
         return n.render(kchild);
