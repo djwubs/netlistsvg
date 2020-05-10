@@ -57,12 +57,9 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule, highli
             return bends.concat(line);
         });
     });
-    // start of hover+bus module:
-    // - sort lines by net
     lines.sort((a, b) => {
         return ('' + a[1].class).localeCompare(b[1].class);
     });
-    // - put lines of the same net into a group, with the same netName as class
     const newLines = new Array();
     let lastNetName: string;
     let pos = -1;
@@ -87,7 +84,6 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule, highli
         newLines[pos].push(line);
     }
     lines = newLines;
-    // end of hover+bus module
 
     const svgAttrs: onml.Attributes = Skin.skin[1];
     svgAttrs.width = g.width.toString();
@@ -115,7 +111,7 @@ export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule) {
         }
     });
     removeDummyEdges(c);
-    const lines: onml.Element[] = _.flatMap(c.edges, (e: ElkModel.Edge) => {
+    let lines: onml.Element[] = _.flatMap(c.edges, (e: ElkModel.Edge) => {
         const netId = ElkModel.wireNameLookup[e.id];
         const netName = 'net_' + netId.slice(1, netId.length - 1);
         return _.flatMap(e.sections, (s: ElkModel.Section) => {
@@ -153,6 +149,29 @@ export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule) {
             return bends.concat(line);
         });
     });
+    lines.sort((a, b) => {
+        return ('' + a[1].class).localeCompare(b[1].class);
+    });
+    const newLines = new Array();
+    let lastNetName: string;
+    let pos = -1;
+    for (const line of lines) {
+        if (line[1].class !== lastNetName) {
+            let bus = '';
+            if (line[1].class.includes(',', 3)) {
+                bus = ' bus';
+            }
+            newLines.push(['g', {class: line[1].class.concat(bus)}]);
+            pos += 1;
+            lastNetName = line[1].class;
+        }
+        if (line[1].class.includes(',', 3)) {
+            line[1]['stroke-width'] = '2';
+        }
+        newLines[pos].push(line);
+    }
+    lines = newLines;
+
     const svgAttrs: onml.Attributes = Skin.skin[1];
     svgAttrs.width = c.width.toString();
     svgAttrs.height = c.height.toString();

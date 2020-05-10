@@ -65,12 +65,9 @@ function drawModule(g, module, highlightId) {
             return bends.concat(line);
         });
     });
-    // start of hover+bus module:
-    // - sort lines by net
     lines.sort(function (a, b) {
         return ('' + a[1].class).localeCompare(b[1].class);
     });
-    // - put lines of the same net into a group, with the same netName as class
     var newLines = new Array();
     var lastNetName;
     var pos = -1;
@@ -96,7 +93,6 @@ function drawModule(g, module, highlightId) {
         newLines[pos].push(line);
     }
     lines = newLines;
-    // end of hover+bus module
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
@@ -161,6 +157,29 @@ function drawSubModule(c, subModule) {
             return bends.concat(line);
         });
     });
+    lines.sort(function (a, b) {
+        return ('' + a[1].class).localeCompare(b[1].class);
+    });
+    var newLines = new Array();
+    var lastNetName;
+    var pos = -1;
+    for (var _i = 0, lines_2 = lines; _i < lines_2.length; _i++) {
+        var line = lines_2[_i];
+        if (line[1].class !== lastNetName) {
+            var bus = '';
+            if (line[1].class.includes(',', 3)) {
+                bus = ' bus';
+            }
+            newLines.push(['g', { class: line[1].class.concat(bus) }]);
+            pos += 1;
+            lastNetName = line[1].class;
+        }
+        if (line[1].class.includes(',', 3)) {
+            line[1]['stroke-width'] = '2';
+        }
+        newLines[pos].push(line);
+    }
+    lines = newLines;
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = c.width.toString();
     svgAttrs.height = c.height.toString();
@@ -250,13 +269,13 @@ function removeDummyEdges(g) {
             var section = edge.sections[0];
             if (dummyIsSource) {
                 // get first bend or endPoint
-                if (section.bendPoints) {
+                if (section.bendPoints && section.bendPoints.length > 0) {
                     return [section.bendPoints[0]];
                 }
                 return section.endPoint;
             }
             else {
-                if (section.bendPoints) {
+                if (section.bendPoints && section.bendPoints.length > 0) {
                     return [_.last(section.bendPoints)];
                 }
                 return section.startPoint;

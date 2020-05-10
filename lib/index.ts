@@ -59,6 +59,7 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist,
     Skin.skin = skin;
     const flatModule = FlatModule.fromNetlist(yosysNetlist, configData);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
+    const highlightId = '';
 
     let promise;
     // if we already have a layout then use it
@@ -70,7 +71,7 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist,
     } else {
         // otherwise use ELK to generate the layout
         promise = elk.layout(kgraph, { layoutOptions: FlatModule.layoutProps.layoutEngine })
-            .then((g) => drawModule(g, flatModule))
+            .then((g) => drawModule(g, flatModule, highlightId))
             // tslint:disable-next-line:no-console
             .catch((e) => { console.error(e); });
     }

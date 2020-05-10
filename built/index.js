@@ -8,7 +8,6 @@ var Skin_1 = require("./Skin");
 var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
-
 function getHighlightId(highlight, yosysNetlist) {
     if (highlight) {
         var moduleName_1;
@@ -50,12 +49,12 @@ function getHighlightId(highlight, yosysNetlist) {
         return highlight;
     }
 }
-
 function render(skinData, yosysNetlist, done, elkData, configData) {
     var skin = onml.p(skinData);
     Skin_1.default.skin = skin;
     var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, configData);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
+    var highlightId = '';
     var promise;
     // if we already have a layout then use it
     if (elkData) {
@@ -67,7 +66,7 @@ function render(skinData, yosysNetlist, done, elkData, configData) {
     else {
         // otherwise use ELK to generate the layout
         promise = elk.layout(kgraph, { layoutOptions: FlatModule_1.FlatModule.layoutProps.layoutEngine })
-            .then(function (g) { return drawModule_1.default(g, flatModule); })
+            .then(function (g) { return drawModule_1.default(g, flatModule, highlightId); })
             // tslint:disable-next-line:no-console
             .catch(function (e) { console.error(e); });
     }
