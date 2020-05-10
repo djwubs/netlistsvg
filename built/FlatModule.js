@@ -161,7 +161,7 @@ function arrayToBitstring(bitArray) {
             ret += ',' + sbit;
         }
     });
-    return ',' + ret + ',';
+    return ret;
 }
 exports.arrayToBitstring = arrayToBitstring;
 // returns whether needle is a substring of haystack

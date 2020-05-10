@@ -2,8 +2,8 @@
 
 import ELK = require('elkjs');
 import onml = require('onml');
-
-import { FlatModule } from './FlatModule';
+import _ = require('lodash');
+import { FlatModule, arrayToBitstring } from './FlatModule';
 import Yosys from './YosysModel';
 import Config from './ConfigModel';
 import Skin from './Skin';
@@ -13,6 +13,45 @@ import drawModule from './drawModule';
 const elk = new ELK();
 
 type ICallback = (error: Error, result?: string) => void;
+
+function getHighlightId(highlight: string, yosysNetlist: Yosys.Netlist): string {
+    if (highlight) {
+        let moduleName: string;
+        _.forEach(yosysNetlist.modules, (mod: Yosys.Module, name: string) => {
+            if (mod.attributes && mod.attributes.top === 1) {
+                moduleName = name;
+            }
+        });
+        if (moduleName == null) {
+            moduleName = Object.keys(yosysNetlist.modules)[0];
+        }
+        const top = yosysNetlist.modules[moduleName];
+
+        if (highlight.includes(' ')) {
+            const highlightSplit: string[] = highlight.split(' ');
+            const hModule: string = highlightSplit[0];
+            const hConnection: string = highlightSplit[1];
+
+            for (const subModule of Object.keys(top.cells)) {
+                if (subModule === hModule) {
+                    for (const connection of Object.keys(top.cells[subModule].connections)) {
+                        if (connection === hConnection) {
+                            return arrayToBitstring(top.cells[subModule].connections[connection]);
+                        }
+                    }
+                }
+            }
+        } else {
+            for (const netname of Object.keys(top.netnames)) {
+                if (netname === highlight) {
+                    return arrayToBitstring(top.netnames[netname].bits);
+                }
+            }
+        }
+    } else {
+        return highlight;
+    }
+}
 
 export function render(skinData: string, yosysNetlist: Yosys.Netlist,
                        done?: ICallback, elkData?: ElkModel.Graph, configData?: Config) {
@@ -25,7 +64,7 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist,
     // if we already have a layout then use it
     if (elkData) {
         promise = new Promise((resolve) => {
-            drawModule(elkData, flatModule);
+            drawModule(elkData, flatModule, highlightId);
             resolve();
         });
     } else {

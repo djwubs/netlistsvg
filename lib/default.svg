@@ -31,6 +31,11 @@ text {
 .splitjoinBody {
   fill:#000;
 }
+g[class^='net_']:hover * {
+  fill:red;
+  stroke:red;
+  stroke-width:2;
+}
 </style>
   <g s:type="mux" transform="translate(50, 50)" s:width="20" s:height="40">
     <s:alias val="$pmux"/>

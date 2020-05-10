@@ -18,7 +18,7 @@ var WireDirection;
     WireDirection[WireDirection["Left"] = 2] = "Left";
     WireDirection[WireDirection["Right"] = 3] = "Right";
 })(WireDirection || (WireDirection = {}));
-function drawModule(g, module) {
+function drawModule(g, module, highlightId) {
     var nodes = module.nodes.map(function (n) {
         var kchild = _.find(g.children, function (c) { return c.id === n.parent + '.' + n.Key; });
         return n.render(kchild);
@@ -37,6 +37,7 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: b.y,
                         class: netName,
+                        'stroke-linecap': 'round',
                     }];
                 startPoint = b;
                 return l;
@@ -47,8 +48,8 @@ function drawModule(g, module) {
                             cx: j.x,
                             cy: j.y,
                             r: 2,
-                            style: 'fill:#000',
                             class: netName,
+                            fill: 'black',
                         }];
                 });
                 bends = bends.concat(circles);
@@ -59,10 +60,43 @@ function drawModule(g, module) {
                         y1: startPoint.y,
                         y2: s.endPoint.y,
                         class: netName,
+                        'stroke-linecap': 'round',
                     }]];
             return bends.concat(line);
         });
     });
+    // start of hover+bus module:
+    // - sort lines by net
+    lines.sort(function (a, b) {
+        return ('' + a[1].class).localeCompare(b[1].class);
+    });
+    // - put lines of the same net into a group, with the same netName as class
+    var newLines = new Array();
+    var lastNetName;
+    var pos = -1;
+    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+        var line = lines_1[_i];
+        if (line[1].class !== lastNetName) {
+            var bus = '';
+            if (line[1].class.includes(',', 3)) {
+                bus = ' bus';
+            }
+            newLines.push(['g', { class: line[1].class.concat(bus) }]);
+            pos += 1;
+            lastNetName = line[1].class;
+        }
+        if (line[1].class.includes(',', 3)) {
+            line[1]['stroke-width'] = '2';
+        }
+        if (line[1].class.slice(4) === highlightId) {
+            line[1]['stroke-width'] = '2';
+            line[1].stroke = 'red';
+            line[1].fill = 'red';
+        }
+        newLines[pos].push(line);
+    }
+    lines = newLines;
+    // end of hover+bus module
     var svgAttrs = Skin_1.default.skin[1];
     svgAttrs.width = g.width.toString();
     svgAttrs.height = g.height.toString();
@@ -216,13 +250,13 @@ function removeDummyEdges(g) {
             var section = edge.sections[0];
             if (dummyIsSource) {
                 // get first bend or endPoint
-                if (section.bendPoints && section.bendPoints.length > 0) {
+                if (section.bendPoints) {
                     return [section.bendPoints[0]];
                 }
                 return section.endPoint;
             }
             else {
-                if (section.bendPoints && section.bendPoints.length > 0) {
+                if (section.bendPoints) {
                     return [_.last(section.bendPoints)];
                 }
                 return section.startPoint;

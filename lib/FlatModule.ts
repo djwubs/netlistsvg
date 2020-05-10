@@ -191,9 +191,9 @@ export interface SigsByConstName {
 
 // returns a string that represents the values of the array of integers
 // [1, 2, 3] -> ',1,2,3,'
-export function arrayToBitstring(bitArray: number[]): string {
+export function arrayToBitstring(bitArray: Yosys.Signals): string {
     let ret: string = '';
-    bitArray.forEach((bit: number) => {
+    bitArray.forEach((bit) => {
         const sbit = String(bit);
         if (ret === '') {
             ret = sbit;
@@ -201,7 +201,7 @@ export function arrayToBitstring(bitArray: number[]): string {
             ret += ',' + sbit;
         }
     });
-    return ',' + ret + ',';
+    return ret;
 }
 
 // returns whether needle is a substring of haystack

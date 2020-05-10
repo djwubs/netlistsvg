@@ -42,6 +42,11 @@ text {
   stroke-linecap: round;
   fill: #000;
 }
+g[class^='net_']:hover * {
+  fill:red;
+  stroke:red;
+  stroke-width:2;
+}
 </style>
 
 <!-- power -->
