@@ -1,6 +1,7 @@
 interface Config {
     hierarchy: Hierarchy;
     top: Top;
+    highlight: Highlight;
 }
 
 interface Hierarchy {
@@ -18,6 +19,11 @@ interface ExpandModules {
 interface Top {
     enable: boolean;
     module: string;
+}
+
+interface Highlight {
+    enable: boolean;
+    ports: string[][];
 }
 
 export default Config;

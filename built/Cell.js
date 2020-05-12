@@ -376,7 +376,7 @@ var Cell = /** @class */ (function () {
         this.addLabels(template, ret);
         return ret;
     };
-    Cell.prototype.render = function (cell) {
+    Cell.prototype.render = function (cell, highlightIds) {
         var template = this.getTemplate();
         var tempclone = clone(template);
         for (var _i = 0, _a = cell.labels; _i < _a.length; _i++) {
@@ -457,7 +457,7 @@ var Cell = /** @class */ (function () {
             tempclone[2][2] = this.type;
         }
         else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
-            var subModule = drawModule_1.drawSubModule(cell, this.subModule);
+            var subModule = drawModule_1.drawSubModule(cell, this.subModule, highlightIds);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
             tempclone[3][1].fill = this.colour;

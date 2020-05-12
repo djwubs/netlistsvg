@@ -11,10 +11,10 @@ enum WireDirection {
     Up, Down, Left, Right,
 }
 
-export default function drawModule(g: ElkModel.Graph, module: FlatModule, highlightId: string) {
+export default function drawModule(g: ElkModel.Graph, module: FlatModule, highlightIds: string[][]) {
     const nodes: onml.Element[] = module.nodes.map((n: Cell) => {
         const kchild: ElkModel.Cell = _.find(g.children, (c) => c.id === n.parent + '.' + n.Key);
-        return n.render(kchild);
+        return n.render(kchild, highlightIds);
     });
     removeDummyEdges(g);
     let lines: onml.Element[] = _.flatMap(g.edges, (e: ElkModel.Edge) => {
@@ -76,10 +76,12 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule, highli
         if (line[1].class.includes(',', 3)) {
             line[1]['stroke-width'] = '2';
         }
-        if (line[1].class.slice(4) === highlightId) {
-            line[1]['stroke-width'] = '2';
-            line[1].stroke = 'red';
-            line[1].fill = 'red';
+        if (highlightIds) {
+            if (_.some(highlightIds, (a) => [module.moduleName, line[1].class.slice(4)].every((v, i) => v === a[i])))  {
+                line[1]['stroke-width'] = '2';
+                line[1].stroke = 'red';
+                line[1].fill = 'red';
+            }
         }
         newLines[pos].push(line);
     }
@@ -102,12 +104,12 @@ export default function drawModule(g: ElkModel.Graph, module: FlatModule, highli
     return onml.s(ret);
 }
 
-export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule) {
+export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule, highlightIds: string[][]) {
     const nodes: onml.Element[] = [];
     _.forEach(subModule.nodes, (n: Cell) => {
         const kchild: ElkModel.Cell = _.find(c.children, (child) => child.id === n.parent + '.' + n.Key);
         if (kchild) {
-            nodes.push(n.render(kchild));
+            nodes.push(n.render(kchild, highlightIds));
         }
     });
     removeDummyEdges(c);
@@ -167,6 +169,13 @@ export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule) {
         }
         if (line[1].class.includes(',', 3)) {
             line[1]['stroke-width'] = '2';
+        }
+        if (highlightIds) {
+            if (_.some(highlightIds, (a) => [subModule.moduleName, line[1].class.slice(4)].every((v, i) => v === a[i])))  {
+                line[1]['stroke-width'] = '2';
+                line[1].stroke = 'red';
+                line[1].fill = 'red';
+            }
         }
         newLines[pos].push(line);
     }

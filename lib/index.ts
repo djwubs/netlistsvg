@@ -9,48 +9,37 @@ import Config from './ConfigModel';
 import Skin from './Skin';
 import { ElkModel, buildElkGraph } from './elkGraph';
 import drawModule from './drawModule';
+import { Hash } from 'crypto';
 
 const elk = new ELK();
 
 type ICallback = (error: Error, result?: string) => void;
 
-function getHighlightId(highlight: string, yosysNetlist: Yosys.Netlist): string {
-    if (highlight) {
-        let moduleName: string;
-        _.forEach(yosysNetlist.modules, (mod: Yosys.Module, name: string) => {
-            if (mod.attributes && mod.attributes.top === 1) {
-                moduleName = name;
-            }
-        });
-        if (moduleName == null) {
-            moduleName = Object.keys(yosysNetlist.modules)[0];
-        }
-        const top = yosysNetlist.modules[moduleName];
+function getHighlightIds(highlight: string[][], yosysNetlist: Yosys.Netlist, flatModule: FlatModule): string[] {
+    const top = yosysNetlist.modules[flatModule.moduleName];
+    const highlightIds = [];
 
-        if (highlight.includes(' ')) {
-            const highlightSplit: string[] = highlight.split(' ');
-            const hModule: string = highlightSplit[0];
-            const hConnection: string = highlightSplit[1];
-
-            for (const subModule of Object.keys(top.cells)) {
-                if (subModule === hModule) {
-                    for (const connection of Object.keys(top.cells[subModule].connections)) {
-                        if (connection === hConnection) {
-                            return arrayToBitstring(top.cells[subModule].connections[connection]);
-                        }
-                    }
-                }
-            }
-        } else {
+    for (const h of highlight) {
+        if (h[0] === flatModule.moduleName && h.length === 2) {
             for (const netname of Object.keys(top.netnames)) {
-                if (netname === highlight) {
-                    return arrayToBitstring(top.netnames[netname].bits);
+                if (netname === h[1]) {
+                    highlightIds.push([h[0], arrayToBitstring(top.netnames[netname].bits)]);
+                }
+            }
+        } else if (h[0] === flatModule.moduleName && h.length > 2) {
+            let peak = top;
+            for (let i = 1; i < h.length - 2; i++) {
+                const type = peak.cells[h[i]].type;
+                peak = yosysNetlist.modules[type];
+            }
+            for (const conn of Object.keys(peak.cells[h[h.length - 2]].connections)) {
+                if (conn === h[h.length - 1]) {
+                    highlightIds.push([h[h.length - 2], arrayToBitstring(peak.cells[h[h.length - 2]].connections[conn])]);
                 }
             }
         }
-    } else {
-        return highlight;
     }
+    return highlightIds;
 }
 
 export function render(skinData: string, yosysNetlist: Yosys.Netlist,
@@ -59,19 +48,23 @@ export function render(skinData: string, yosysNetlist: Yosys.Netlist,
     Skin.skin = skin;
     const flatModule = FlatModule.fromNetlist(yosysNetlist, configData);
     const kgraph: ElkModel.Graph = buildElkGraph(flatModule);
-    const highlightId = '';
+    let highlightIds = null;
+
+    if (configData.highlight.enable === true) {
+        highlightIds = getHighlightIds(configData.highlight.ports, yosysNetlist, flatModule);
+    }
 
     let promise;
     // if we already have a layout then use it
     if (elkData) {
         promise = new Promise((resolve) => {
-            drawModule(elkData, flatModule, highlightId);
+            drawModule(elkData, flatModule, highlightIds);
             resolve();
         });
     } else {
         // otherwise use ELK to generate the layout
         promise = elk.layout(kgraph, { layoutOptions: FlatModule.layoutProps.layoutEngine })
-            .then((g) => drawModule(g, flatModule, highlightId))
+            .then((g) => drawModule(g, flatModule, highlightIds))
             // tslint:disable-next-line:no-console
             .catch((e) => { console.error(e); });
     }

@@ -18,10 +18,10 @@ var WireDirection;
     WireDirection[WireDirection["Left"] = 2] = "Left";
     WireDirection[WireDirection["Right"] = 3] = "Right";
 })(WireDirection || (WireDirection = {}));
-function drawModule(g, module, highlightId) {
+function drawModule(g, module, highlightIds) {
     var nodes = module.nodes.map(function (n) {
         var kchild = _.find(g.children, function (c) { return c.id === n.parent + '.' + n.Key; });
-        return n.render(kchild);
+        return n.render(kchild, highlightIds);
     });
     removeDummyEdges(g);
     var lines = _.flatMap(g.edges, function (e) {
@@ -71,8 +71,7 @@ function drawModule(g, module, highlightId) {
     var newLines = new Array();
     var lastNetName;
     var pos = -1;
-    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
-        var line = lines_1[_i];
+    var _loop_1 = function (line) {
         if (line[1].class !== lastNetName) {
             var bus = '';
             if (line[1].class.includes(',', 3)) {
@@ -85,12 +84,18 @@ function drawModule(g, module, highlightId) {
         if (line[1].class.includes(',', 3)) {
             line[1]['stroke-width'] = '2';
         }
-        if (line[1].class.slice(4) === highlightId) {
-            line[1]['stroke-width'] = '2';
-            line[1].stroke = 'red';
-            line[1].fill = 'red';
+        if (highlightIds) {
+            if (_.some(highlightIds, function (a) { return [module.moduleName, line[1].class.slice(4)].every(function (v, i) { return v === a[i]; }); })) {
+                line[1]['stroke-width'] = '2';
+                line[1].stroke = 'red';
+                line[1].fill = 'red';
+            }
         }
         newLines[pos].push(line);
+    };
+    for (var _i = 0, lines_1 = lines; _i < lines_1.length; _i++) {
+        var line = lines_1[_i];
+        _loop_1(line);
     }
     lines = newLines;
     var svgAttrs = Skin_1.default.skin[1];
@@ -109,12 +114,12 @@ function drawModule(g, module, highlightId) {
     return onml.s(ret);
 }
 exports.default = drawModule;
-function drawSubModule(c, subModule) {
+function drawSubModule(c, subModule, highlightIds) {
     var nodes = [];
     _.forEach(subModule.nodes, function (n) {
         var kchild = _.find(c.children, function (child) { return child.id === n.parent + '.' + n.Key; });
         if (kchild) {
-            nodes.push(n.render(kchild));
+            nodes.push(n.render(kchild, highlightIds));
         }
     });
     removeDummyEdges(c);
@@ -163,8 +168,7 @@ function drawSubModule(c, subModule) {
     var newLines = new Array();
     var lastNetName;
     var pos = -1;
-    for (var _i = 0, lines_2 = lines; _i < lines_2.length; _i++) {
-        var line = lines_2[_i];
+    var _loop_2 = function (line) {
         if (line[1].class !== lastNetName) {
             var bus = '';
             if (line[1].class.includes(',', 3)) {
@@ -177,7 +181,18 @@ function drawSubModule(c, subModule) {
         if (line[1].class.includes(',', 3)) {
             line[1]['stroke-width'] = '2';
         }
+        if (highlightIds) {
+            if (_.some(highlightIds, function (a) { return [subModule.moduleName, line[1].class.slice(4)].every(function (v, i) { return v === a[i]; }); })) {
+                line[1]['stroke-width'] = '2';
+                line[1].stroke = 'red';
+                line[1].fill = 'red';
+            }
+        }
         newLines[pos].push(line);
+    };
+    for (var _i = 0, lines_2 = lines; _i < lines_2.length; _i++) {
+        var line = lines_2[_i];
+        _loop_2(line);
     }
     lines = newLines;
     var svgAttrs = Skin_1.default.skin[1];
@@ -226,7 +241,7 @@ function findBendNearDummy(net, dummyIsSource, dummyLoc) {
 function removeDummyEdges(g) {
     // go through each edge group for each dummy
     var dummyNum = 0;
-    var _loop_1 = function () {
+    var _loop_3 = function () {
         var dummyId = '$d_' + String(dummyNum);
         // find all edges connected to this dummy
         var edgeGroup = _.filter(g.edges, function (e) {
@@ -306,7 +321,7 @@ function removeDummyEdges(g) {
     };
     // loop until we can't find an edge group or we hit 10,000
     while (dummyNum < 10000) {
-        var state_1 = _loop_1();
+        var state_1 = _loop_3();
         if (state_1 === "break")
             break;
     }

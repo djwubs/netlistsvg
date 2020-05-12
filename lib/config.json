@@ -11,5 +11,9 @@
   "top": {
     "enable": false,
     "module": ""
+  },
+  "highlight": {
+    "enable": false,
+    "ports": [[""]]
   }
 }

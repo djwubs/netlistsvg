@@ -2,71 +2,63 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var ELK = require("elkjs");
 var onml = require("onml");
-var _ = require("lodash");
 var FlatModule_1 = require("./FlatModule");
 var Skin_1 = require("./Skin");
 var elkGraph_1 = require("./elkGraph");
 var drawModule_1 = require("./drawModule");
 var elk = new ELK();
-function getHighlightId(highlight, yosysNetlist) {
-    if (highlight) {
-        var moduleName_1;
-        _.forEach(yosysNetlist.modules, function (mod, name) {
-            if (mod.attributes && mod.attributes.top === 1) {
-                moduleName_1 = name;
-            }
-        });
-        if (moduleName_1 == null) {
-            moduleName_1 = Object.keys(yosysNetlist.modules)[0];
-        }
-        var top = yosysNetlist.modules[moduleName_1];
-        if (highlight.includes(' ')) {
-            var highlightSplit = highlight.split(' ');
-            var hModule = highlightSplit[0];
-            var hConnection = highlightSplit[1];
-            for (var _i = 0, _a = Object.keys(top.cells); _i < _a.length; _i++) {
-                var subModule = _a[_i];
-                if (subModule === hModule) {
-                    for (var _b = 0, _c = Object.keys(top.cells[subModule].connections); _b < _c.length; _b++) {
-                        var connection = _c[_b];
-                        if (connection === hConnection) {
-                            return FlatModule_1.arrayToBitstring(top.cells[subModule].connections[connection]);
-                        }
-                    }
+function getHighlightIds(highlight, yosysNetlist, flatModule) {
+    var top = yosysNetlist.modules[flatModule.moduleName];
+    var highlightIds = [];
+    for (var _i = 0, highlight_1 = highlight; _i < highlight_1.length; _i++) {
+        var h = highlight_1[_i];
+        if (h[0] === flatModule.moduleName && h.length === 2) {
+            for (var _a = 0, _b = Object.keys(top.netnames); _a < _b.length; _a++) {
+                var netname = _b[_a];
+                if (netname === h[1]) {
+                    highlightIds.push([h[0], FlatModule_1.arrayToBitstring(top.netnames[netname].bits)]);
                 }
             }
         }
-        else {
-            for (var _d = 0, _e = Object.keys(top.netnames); _d < _e.length; _d++) {
-                var netname = _e[_d];
-                if (netname === highlight) {
-                    return FlatModule_1.arrayToBitstring(top.netnames[netname].bits);
+        else if (h[0] === flatModule.moduleName && h.length > 2) {
+            var peak = top;
+            for (var i = 1; i < h.length - 2; i++) {
+                var type = peak.cells[h[i]].type;
+                peak = yosysNetlist.modules[type];
+            }
+            console.log(peak);
+            console.log(h);
+            for (var _c = 0, _d = Object.keys(peak.cells[h[h.length - 2]].connections); _c < _d.length; _c++) {
+                var conn = _d[_c];
+                if (conn === h[h.length - 1]) {
+                    highlightIds.push([h[h.length - 3], FlatModule_1.arrayToBitstring(peak.cells[h[h.length - 2]].connections[conn])]);
                 }
             }
         }
     }
-    else {
-        return highlight;
-    }
+    return highlightIds;
 }
 function render(skinData, yosysNetlist, done, elkData, configData) {
     var skin = onml.p(skinData);
     Skin_1.default.skin = skin;
     var flatModule = FlatModule_1.FlatModule.fromNetlist(yosysNetlist, configData);
     var kgraph = elkGraph_1.buildElkGraph(flatModule);
-    var highlightId = '';
+    var highlightIds = null;
+    if (configData.highlight.enable === true) {
+        highlightIds = getHighlightIds(configData.highlight.ports, yosysNetlist, flatModule);
+    }
     var promise;
     // if we already have a layout then use it
     if (elkData) {
         promise = new Promise(function (resolve) {
-            drawModule_1.default(elkData, flatModule, highlightId);
+            drawModule_1.default(elkData, flatModule, highlightIds);
             resolve();
         });
     }
     else {
         // otherwise use ELK to generate the layout
         promise = elk.layout(kgraph, { layoutOptions: FlatModule_1.FlatModule.layoutProps.layoutEngine })
-            .then(function (g) { return drawModule_1.default(g, flatModule, highlightId); })
+            .then(function (g) { return drawModule_1.default(g, flatModule, highlightIds); })
             // tslint:disable-next-line:no-console
             .catch(function (e) { console.error(e); });
     }

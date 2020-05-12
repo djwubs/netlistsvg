@@ -376,7 +376,7 @@ export default class Cell {
         return ret;
     }
 
-    public render(cell: ElkModel.Cell): onml.Element {
+    public render(cell: ElkModel.Cell, highlightIds: string[][]): onml.Element {
         const template = this.getTemplate();
         const tempclone = clone(template);
         for (const label of cell.labels) {
@@ -453,7 +453,7 @@ export default class Cell {
             // first child of generic must be a text node.
             tempclone[2][2] = this.type;
         } else if (template[1]['s:type'] === 'generic' && this.subModule !== null) {
-            const subModule = drawSubModule(cell, this.subModule);
+            const subModule = drawSubModule(cell, this.subModule, highlightIds);
             tempclone[3][1].width = subModule[1].width;
             tempclone[3][1].height = subModule[1].height;
             tempclone[3][1].fill = this.colour;
