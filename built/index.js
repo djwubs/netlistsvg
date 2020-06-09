@@ -1,5 +1,6 @@
 'use strict';
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.render = void 0;
 var ELK = require("elkjs");
 var onml = require("onml");
 var FlatModule_1 = require("./FlatModule");
@@ -26,12 +27,10 @@ function getHighlightIds(highlight, yosysNetlist, flatModule) {
                 var type = peak.cells[h[i]].type;
                 peak = yosysNetlist.modules[type];
             }
-            console.log(peak);
-            console.log(h);
             for (var _c = 0, _d = Object.keys(peak.cells[h[h.length - 2]].connections); _c < _d.length; _c++) {
                 var conn = _d[_c];
                 if (conn === h[h.length - 1]) {
-                    highlightIds.push([h[h.length - 3], FlatModule_1.arrayToBitstring(peak.cells[h[h.length - 2]].connections[conn])]);
+                    highlightIds.push([h[h.length - 2], FlatModule_1.arrayToBitstring(peak.cells[h[h.length - 2]].connections[conn])]);
                 }
             }
         }

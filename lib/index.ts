@@ -9,7 +9,6 @@ import Config from './ConfigModel';
 import Skin from './Skin';
 import { ElkModel, buildElkGraph } from './elkGraph';
 import drawModule from './drawModule';
-import { Hash } from 'crypto';
 
 const elk = new ELK();
 
