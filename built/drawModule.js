@@ -147,7 +147,7 @@ function drawSubModule(c, subModule, highlightIds) {
                             cx: j.x,
                             cy: j.y,
                             r: 2,
-                            style: 'fill:#000',
+                            fill: 'black',
                             class: netName,
                         }];
                 });

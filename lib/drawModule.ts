@@ -136,7 +136,7 @@ export function drawSubModule(c: ElkModel.Cell, subModule: FlatModule, highlight
                         cx: j.x,
                         cy: j.y,
                         r: 2,
-                        style: 'fill:#000',
+                        fill: 'black',
                         class: netName,
                     }]);
                 bends = bends.concat(circles);
