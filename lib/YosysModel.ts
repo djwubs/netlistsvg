@@ -17,7 +17,7 @@ namespace Yosys {
     }
 
     interface ModuleAttributes {
-        top?: number|string;
+        top?: number;
         [attrName: string]: any;
     }
 
